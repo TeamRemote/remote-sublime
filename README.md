@@ -5,16 +5,16 @@ Remote Collab for SublimeText
 
 Remote Collab is an open-source SublimeText plugin for remote pair programming, allowing multiple developers to work together on the same project in real-time.
 
-Installation Instructions
-------------------------
+How to Install
+--------------
 
 #### Via Package Control
 
-The easiest way to install is using Sublime Package Control.
+The easiest way to install is using [Sublime Package Control](https://sublime.wbond.net/).
 
-1. Open Command Palette using menu item `Tools -> Command Palette...` (⇧⌘P on Mac)
+1. Open Command Palette using menu item `Tools -> Command Palette...` (<kbd>⇧</kbd><kbd>⌘</kbd><kbd>P</kbd> on Mac)
 2. Choose `Package Control: Install Package`
-3. Find `RemoteCollab` and hit Enter
+3. Find `RemoteCollab` and hit <kbd>Enter</kbd>
 
 #### Manual
 
@@ -32,4 +32,4 @@ Coming soon!
 Team Remote
 -----------
 
-Team Remote is Hawk Weisman (@hawkw), Dibyojyoti Mukherjee (@dibyom), Soukaina Hamimoune (@hamimounes), and Andreas Bach Landgrebe (@grebes15).
+Team Remote is Hawk Weisman (@hawkw), Dibyojyoti Mukherjee (@dibyom), Soukaina Hamimoune (@hamimounes), and Andreas Bach Landgrebe (@grebes15). We are students at Allegheny College.
