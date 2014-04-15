@@ -5,9 +5,9 @@ def diff(old, new):
     # insert OT here
 
 class Session:
-    def __init__(self, session_id):
+    def __init__(self, session_id, last_buffer):
         self.session_id = session_id
-        self.last_buffer = None
+        self.last_buffer = last_buffer
 
     def send_deltas(self, new_buffer):
         """Sends deltas to the server over the current connection and sets the 
@@ -45,11 +45,15 @@ class DiffListener(sublime_plugin.EventListener):
 
 class StartSessionCommand(sublime_plugin.TextCommand):
     """Command to start a new RemoteCollab session for the current view"""
+    get_buffer = lambda view: view.substr(sublime.Region(0, view.size()))
+
         def run(self):     
             # this will have to connect to the remote server (getting the address
             # from the settings file), wait for the server to generate the session,
             # and tell the user the access token. it'll then have to start watching
             # the urrent view synchronizing
+            session_id = get_id_from_server()
+            DiffListener.watched_views[self.view] = Session(session_id, get_buffer(self.view))
 
 class ConnectToSessionCommand(sublime_plugin.ApplicationCommand):
     """Command to connect to an external RemoteCollab session."""
