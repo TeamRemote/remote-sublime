@@ -10,8 +10,8 @@ class DiffListener(sublime_plugin.EventListener):
     def on_modified_async(self, view):
         """Listens for modifications to the view."""
         self.buffer = view.substr(sublime.Region(0, view.size()))# get the body text of the whole buffer
-        send_deltas(diff(self.last_buffer, self.buffer))              # send the deltas to the server
-        self.last_buffer = self.buffer    
+        send_deltas(diff(self.last_buffer, self.buffer))         # send the deltas to the server
+        self.last_buffer = self.buffer                           # set the last buffer equal to the current buffer
 
 
     def diff(old, new):
@@ -37,6 +37,7 @@ class ServerConnection:
         # add constructor
 
     def send_deltas(diff):
+        """Sends deltas to the server over the current connection."""
         # send the deltas over the current server connection
 
     # insert some kind of way to listen for deltas here? not sure how to synchronize...
