@@ -21,4 +21,4 @@ script:
     - python $HOME/.config/sublime-text-$SUBLIME_TEXT_VERSION/Packages/UnitTesting/sbin/run.py RemoteCollab
 
 notifications:
-    email: false
+    email: true
