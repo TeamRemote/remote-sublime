@@ -5,7 +5,7 @@ python:
 
 env:
     global:
-        - PACKAGE="remote"
+        - PACKAGE="remote-sublime"
     matrix:
         #- SUBLIME_TEXT_VERSION="2"
         - SUBLIME_TEXT_VERSION="3"
