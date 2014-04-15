@@ -1,27 +1,41 @@
 import sublime, sublime_plugin
 
+def diff(old, new):
+    """Uses Operational Transformation to diff the new view 
+    against the old view."""
+    # insert OT here
+
+class Session:
+    def __init__(self, session_id):
+        self.session_id = session_id
+        self.last_buffer = None
+
+    def send_deltas(self, new_buffer):
+        """Sends deltas to the server over the current connection 
+        and sets the passed buffer as this view's buffer."""
+        diff = diff(self.last_buffer, new_buffer)
+        # TODO: insert code to actually send deltas here.
+        self.last_buffer = new_buffer
+
+
 class DiffListener(sublime_plugin.EventListener):
-    """Listens for modifications to the view and gets the diffs using Operational Transformation"""
+    """Listens for modifications to the view and gets the diffs
+    using Operational Transformation"""
 
     def __init___(self):
-        self.buffer = None
-        self.last_buffer = None
-        self.listening = False
+        self.watched_views = {}
 
     def on_modified_async(self, view):
         """Listens for modifications to the view."""
-        if (listening):
-            self.buffer = view.substr(sublime.Region(0, view.size()))# get the body text of the whole buffer
-            send_deltas(diff(self.last_buffer, self.buffer))         # send the deltas to the server
-            self.last_buffer = self.buffer                           # set the last buffer equal to the current buffer
-
-    def diff(old, new):
-        """Uses Operational Transformation to diff the new view against the old view."""
-        # insert OT here
+        if view in watched_views.keys():
+            # get the body text of the whole buffer
+            buff = view.substr(sublime.Region(0, view.size()))
+            # send the deltas to the server
+            watched_views[view].send_deltas(buff)           
 
 class StartSessionCommand(sublime_plugin.TextCommand):
     """Command to start a new RemoteCollab session for the current view"""
-        def run():
+        def run(self):     
             # this will have to connect to the remote server (getting the address
             # from the settings file), wait for the server to generate the session,
             # and tell the user the access token. it'll then have to start watching the
@@ -32,13 +46,3 @@ class ConnectToSessionCommand(sublime_plugin.ApplicationCommand):
     # this will have to connect to the remote server (configured in settings file),
     # send the session token, make a new view containing the contents of the remote
     # session, and then start listening for modifications to that view and synchronizing
-
-class ServerConnection:
-    def __init__(self):
-        # add constructor
-
-    def send_deltas(diff):
-        """Sends deltas to the server over the current connection."""
-        # send the deltas over the current server connection
-
-    # insert some kind of way to listen for deltas here? not sure how to synchronize...
