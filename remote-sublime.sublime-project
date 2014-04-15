@@ -9,7 +9,7 @@
 		{
 			"name": "Tests",
 			"follow_symlinks": true,
-			"path": "/test/"
+			"path": "/tests/"
 		},
 	],
 	"settings":
