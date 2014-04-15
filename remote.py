@@ -23,15 +23,25 @@ class DiffListener(sublime_plugin.EventListener):
     using Operational Transformation"""
 
     def __init___(self):
+        # watched_views is a dict of which currently open views are bound to 
+        # remote-collab sessions. This allows the  EventListener to check if
+        # on_modified events happened to the views it cares about, or to other 
+        # views which it doesn't care about.
         self.watched_views = {}
 
     def on_modified_async(self, view):
-        """Listens for modifications to the view."""
+        """Listens for modifications to ."""
         if view in watched_views.keys():
             # get the body text of the whole buffer
             buff = view.substr(sublime.Region(0, view.size()))
             # send the deltas to the server
-            watched_views[view].send_deltas(buff)           
+            watched_views[view].send_deltas(buff)   
+
+    def on_close(self, view): 
+        """Check to see if views I care about are closed, and if they are,
+        drop them from my watched-views"""
+        if view in watched_views.keys():
+            del watched_views[view]      
 
 class StartSessionCommand(sublime_plugin.TextCommand):
     """Command to start a new RemoteCollab session for the current view"""
