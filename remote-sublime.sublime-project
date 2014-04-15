@@ -5,11 +5,13 @@
 			"name": "Source",
 			"follow_symlinks": true,
 			"path": ".",
+			"folder_ignore_patterns": ["tests"],
+			"file_ignore_patterns": ["LICENSE", "*.md", "*.sublime-project", "*travis*", ".gitignore"]
 		},
 		{
 			"name": "Tests",
 			"follow_symlinks": true,
-			"path": "/tests/"
+			"path": "./tests/"
 		},
 	],
 	"settings":
