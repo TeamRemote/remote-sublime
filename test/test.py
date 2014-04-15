@@ -13,4 +13,6 @@ class TestDiffListener(TestCase):
             self.view.set_scratch(True)
             self.view.window().run_command("close_file")
 
-    # put actual tests here
+    def TestOnModified(self):
+        # put actual tests here
+        pass
