@@ -5,20 +5,20 @@ python:
 
 env:
     global:
-        - PACKAGE="UnitTesting-example"
+        - PACKAGE="remote"
     matrix:
-        - SUBLIME_TEXT_VERSION="2"
+        #- SUBLIME_TEXT_VERSION="2"
         - SUBLIME_TEXT_VERSION="3"
 
 install:
-    - sh -e travis.sh $SUBLIME_TEXT_VERSION RemoteCollab
+    - sh -e travis.sh $SUBLIME_TEXT_VERSION $PACKAGE
 
 before_script:
     - export DISPLAY=:99.0
     - sh -e /etc/init.d/xvfb start
 
 script:
-    - python $HOME/.config/sublime-text-$SUBLIME_TEXT_VERSION/Packages/UnitTesting/sbin/run.py RemoteCollab
+    - python $HOME/.config/sublime-text-$SUBLIME_TEXT_VERSION/Packages/UnitTesting/sbin/run.py $PACKAGE
 
 notifications:
     email: true
