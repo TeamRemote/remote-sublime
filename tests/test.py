@@ -1,5 +1,4 @@
-import unittest
-import sublime sublime_plugin
+import sublime, sublime_plugin
 from unittest import TestCase
 
 version = sublime.version()
@@ -17,7 +16,7 @@ class TestDiffListener(TestCase):
             run_command("open_file")
     def testOnModify(self):
         # put actual test here
-        
+
         pass
 
     def testOnClose(self):
