@@ -1,4 +1,4 @@
-import diff_match_patch
+from . import diff_match_patch
 import socket 
 import sublime, sublime_plugin
 import sys
@@ -16,10 +16,10 @@ class Session:
     	    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
     	    s.bind((host,port)) 
     	    s.listen(backlog) 
-    	except socket.error, (value,message): 
+    	except OSError as e: 
     	    if s: 
     	        s.close() 
-    	    print "Could not open socket: " + message 
+    	    print("Could not open socket: ", e)
     	    sys.exit(1) 
 
     def get_remote_client(server):
@@ -40,10 +40,10 @@ class Session:
     	try: 
     	    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
     	    s.connect((host,port)) 
-    	except socket.error, (value,message): 
+    	except OSError as e: 
     	    if s: 
     	        s.close() 
-    	    print "Could not open socket: " + message 
+    	    print("Could not open socket: ", e) 
     	    sys.exit(1) 
     	return s	
 
@@ -64,21 +64,24 @@ class Session:
     def send_diffs(self, new_buffer):
         """Sends deltas to the server over the current connection and sets the 
         passed buffer as this view's buffer."""
-	    diffs = dmp.diff_main(self.shadow, new_buffer)
-	    patch = dmp.patch_make(shadow, diffs)
- 		self.client.send(dmp.patch_toText(patch))
+        diffs = dmp.diff_main(self.shadow, new_buffer)
+        patch = dmp.patch_make(shadow, diffs)
+        self.client.send(dmp.patch_toText(patch))
         self.shadow = new_buffer
 
     def patch_listener(self, server):
-    	while True: 
-    	    client, address = s.accept() 
-    	    data = client.recv(size) 
-    	    if data:
-    	    	# Check checksum etc.
-    	        patch = dmp.patch_fromText(data) 
-    	        self.shadow, shadow_results = dmp.patch_apply(patch, self.shadow)
-    			get_buffer(self.view), view_results = dmp.patch_apply(patch, get_buffer(self.view)) 
-    
-  	def end_session(self):
-  		self.server.close()
-  		self.client.close()
+        while True:
+            client, address = s.accept()
+            data = client.recv(size)
+            if data:
+                # Check checksum etc.
+                patch = dmp.patch_fromText(data)
+                self.shadow, shadow_results = dmp.patch_apply(patch, self.shadow)
+                current_buffer = get_buffer(self.view)
+                current_buffer, view_results = dmp.patch_apply(patch, current_buffer)
+                # Replace the view contents with the new buffer
+                self.view.replace(edit, sublime.Region(0, self.view.size), current_buffer)
+
+    def end_session(self):
+        self.server.close()
+        self.client.close()
