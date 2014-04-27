@@ -42,7 +42,7 @@ class StartSessionCommand(sublime_plugin.TextCommand):
         # from the settings file), wait for the server to generate the session,
         # and tell the user the access token. it'll then have to start watching
         # the urrent view synchronizing
-        session = Session(self.view, True)
+        session = Session(self.view, None)
         df.sessions.append(session)
         #session.patch_listener()
             
@@ -65,7 +65,7 @@ class ConnectToSessionCommand(sublime_plugin.WindowCommand):
 
     def on_done(self, input):
         """Input panel handler - creates a new session connected to the given IP address. """
-        session = Session(self.window.new_file(), False)
+        session = Session(self.window.new_file(), input)
         df.sessions.append(session)
         #session.patch_listener()
 
