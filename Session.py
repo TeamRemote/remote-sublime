@@ -47,18 +47,22 @@ class Session:
     	    sys.exit(1) 
     	return s	
 
-    def __init__(self, view, is_creator):
+    def __init__(self, view, host):
+        """
+        Constructor for a Session. Host is the IP address of the host we are connecting to.
+        If we are the host, host should equal 'None'.
+        """
         self.view = view
         self.shadow = get_buffer(self.view)
         self.server = None
         self.client = None
         self.dmp = diff_match_patch.diff_match_patch()
         dmp.Diff_Timeout = 0
-        if is_creator:
+        if not host:
         	self.server = create_server()
         	self.client = get_remote_client()
         else:
-        	self.client = create_client('')
+        	self.client = create_client(host)
         	self.server = create_server()
 
     def send_diffs(self, new_buffer):
