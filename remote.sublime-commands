@@ -1,0 +1,10 @@
+[
+    {
+        "caption": "Remote: Connect to Session",
+        "command": "connect_to_session"
+    },
+    {
+        "caption": ": Host Session",
+        "command": "host_session"
+    }
+]
