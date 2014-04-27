@@ -1,0 +1,176 @@
+\documentclass[t,ignorenonframetext]{beamer}
+%\usepackage{beamerthemeJuanLesPins}%
+%\usepackage{beamercolorthemecougar} 
+%\usepackage{beamerinnerthemecircles} 
+\mode<presentation>
+{
+\usetheme{AnnArbor}
+\usecolortheme{default}
+  %\usefonttheme{serif}
+  }
+
+  \usefonttheme{structuresmallcapsserif}
+  \usepackage{enumerate,graphicx,enumerate}
+  \usepackage[english]{babel}
+% The line below is what I talked about that makes all
+% items in a list into overlays
+%\beamerdefaultoverlayspecification{<+->}
+
+\newcommand{\tc}[1]{$\backslash$\texttt{#1}}
+
+\title[GAs for energy efficenct buildings]{Optimizing Energy Efficiency in Buildings using Parallel Multi-Objective Genetic Algorithms}
+\author{Dibyajyoti Mukherjee}
+\institute[]
+{
+Allegheny College \\
+\medskip
+{\emph{mukherjeed@allegheny.edu}}
+}
+\begin{document}
+\frame{
+\maketitle
+}
+\frame{
+\tableofcontents
+}
+
+
+
+\section[Introduction]{Introduction}
+  
+  \begin{frame}{Goals}
+    \frametitle{Goals}
+    \vspace*{.5in} 
+    \pause
+    \begin{block}{Develop a genetic algorithm based system for optimizing energy efficiency and associated cost for building refurbishment}
+    \end{block}
+    \pause
+    \begin{block}{Implement a fast evaluation stratergy using master-slave distributed evaluation}
+    \end{block}
+    \pause
+    \begin{block}{Changing this to something else}
+    \end{block}
+  \end{frame}
+
+  \begin{frame}{Related Work}
+    \frametitle{Related Work}
+    \begin{table}[h]
+    \caption{Overview of the five studies reviewed}
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+    Author          & Year & Study Focus                                                                                             \\ \hline
+    Wang et al.     & 2005 & \begin{tabular}[c]{@{}c@{}}Object oriented framework for building energy \\ usage optimization\end{tabular}  \\ \hline
+    Pernodet et al. & 2009 &  GAs for building refurbishment optimization                                                              \\ \hline
+    Magnier et al.  & 2010 & \begin{tabular}[c]{@{}c@{}}Thermal comfort and energy usage optimization \\ using GA and neural networks\end{tabular} \\ \hline
+    Pejicic et al.  & 2012 & \begin{tabular}[c]{@{}c@{}}Optimal energy efficient building design \\ using GA and tabu search\end{tabular}          \\ \hline
+    Milajic et al.  & 2013 & \begin{tabular}[c]{@{}c@{}}Methodology for green building design \\ using multi-objective GA\end{tabular}             \\ \hline
+    \end{tabular}
+    \label{table:lit_review}
+    \end{table}
+  \end{frame}
+
+ \section[Implementation]{Implementation} 
+  
+  \begin{frame}{Building Variables}
+    \frametitle{Building Variables}
+    \begin{table}[h]
+    \caption{HVAC System variables }
+    \label{table:hvac}
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+    Variable name                  & Type       & Unit                      \\ \hline
+    Window glazing Material        & Discrete & N/A                        \\
+    Insulation Material            & Discrete & N/A                        \\ 
+    Heating Set Point              & Continuous & $^{\circ}$C               \\
+    Cooling Set Point              & Continuous & $^{\circ}$C                \\
+    HVAC System Type               & Discrete   & N/A                        \\ \hline
+    \end{tabular}
+    \end{table}
+  \end{frame}
+
+  \begin{frame}{System Architecture}
+    \frametitle{System Architecture}
+     \begin{figure}[htbp]
+     \centering
+     \includegraphics[scale=0.27]{system.png}
+     \caption{Distributed Evaluation Architecture}
+     \label{fig:system}
+     \end{figure} 
+  \end{frame}
+
+ \section[Results]{Case Study Results}
+
+  \begin{frame}{Case Study Results}
+    \frametitle{Pareto Optimal Solutions}
+    \begin{figure}[htbp]
+    \centering
+    \includegraphics[width =0.7\linewidth]{results_front.png}
+    \caption{Pareto Optimal Front for case study run}
+    \label{fig:results}
+    \end{figure}
+  \end{frame}
+
+  \begin{frame}{Case Study Results}
+    \frametitle{Pareto Optimal scenarios}
+      \begin{table}[h]
+      \centering
+      \caption{Result scenarios from Pareto optimal set of solutions}
+      \label{table:results}
+      \begin{tabular}{|l|l|l|l|}
+      \hline
+      Scenario     & Energy Used  & Construction Cost  & Energy savings \\ \hline
+      Base         & 59087 KWh                          & \$N/A                  & N/A                               \\ \hline
+      Least Energy & 49592 KWh                          & \$9931                  & 16.07\%                       \\ \hline
+      Least Cost   & 57415 KWh                          & \$9145                  & 2.83\%                       \\ \hline
+      Middle       & 49927 KWh                          & \$9648                  & 15.50\%                      \\ \hline
+      \end{tabular}
+      \end{table}
+  \end{frame}
+
+  \begin{frame}{Results }
+    \frametitle{Parallel Evaluation Analysis}
+    \vspace*{.7in} 
+    \pause
+    \begin{block}{$T =t ∗ (N ∗p)/S$}
+    \end{block}
+    \pause
+    \begin{block}{Total cost of the case study: \$1.05}
+    \end{block}
+    \pause
+    \begin{block}{Slower than ANN. But better accuracy and no training period.}
+    \end{block}   
+  \end{frame}
+
+\begin{frame}{Limitations}
+  \frametitle{Limitations}
+  \vspace*{.7in} 
+  \pause
+  \begin{block}{Cost Approximations}
+  \pause
+  \end{block}
+  \begin{block}{Unreliability of Distributed Systems}
+  \pause
+  \end{block}
+  \begin{block}{Building Modelling File Format}
+  \pause
+  \end{block}
+\end{frame}
+
+\section[Future Work]{Future Work}
+  \frametitle{Future Work}
+  \begin{frame}{Future Work}
+  \vspace*{1.0in} 
+  \pause
+  \begin{block}{Cost Ammortization}
+  \pause
+  \end{block}
+  \begin{block}{Also changing hi}
+  \pause
+  \end{block}
+  \end{frame}
+  
+
+\end{document}
+
