@@ -61,8 +61,7 @@ class DiffListener(sublime_plugin.EventListener):
         active remote session."""
         if view in watched_views.keys():
             # get the body text of the whole buffer
-            buff = view.substr(sublime.Region(0, view.size()))
-            # send the deltas to the server
+            buff = view.substr(sublime.Region(0, view.size())) 
             watched_views[view].send_deltas(buff)   
 
     def on_close(self, view): 
@@ -81,23 +80,9 @@ class StartSessionCommand(sublime_plugin.TextCommand):
             # and tell the user the access token. it'll then have to start watching
             # the urrent view synchronizing
             #session_id = get_id_from_server()
-            #DiffListener.watched_views[self.view] = Session(session_id, get_buffer(self.view))
+            DiffListener.watched_views[self.view] = Session(session_id, get_buffer(self.view), is_true)
             
-            # Create a server socket and start listening for a client to connect
-            server_socket = create_server_socket()
-            client_connected = false
-            client_socket = None
-            size = 4096
-            while not client_connected:
-                client_socket, address = server_socket.accept()
-                client_connected = true
-                client_socket.send("Connected")
-            
-            while True:
-                client, address = server_socket.accept()
-                data = client.recv(size)
-                if data:
-                    #applypatch(data, get_buffer(self.view))
+          
             
 class ConnectToSessionCommand(sublime_plugin.ApplicationCommand):
     """Command to connect to an external RemoteCollab session."""
@@ -106,8 +91,5 @@ class ConnectToSessionCommand(sublime_plugin.ApplicationCommand):
     # session, and then start listening for modifications to that view and synchronizing
     
     def run(self):
-        host = '' # This should be from the user?
-        client_socket = create_client_socket('')
-        client_socket.send("Initializing connection")
-        server_socket = create_server_socket()
+        
         
