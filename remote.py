@@ -1,50 +1,62 @@
 import sublime, sublime_plugin
 import Session
-
-def diff(old, new):
-    """Uses Operational Transformation to diff the new view against the old view."""
-    # insert OT here
+import socket
+import sys
 
 class DiffListener(sublime_plugin.EventListener):
     """Listens for modifications to the view and gets the diffs using 
     Operational Transformation"""
 
     def __init___(self):
-        # watched_views is a dict of which currently open views are bound to 
+        # watched_views is a sessions of which currently open views are bound to 
         # remote-collab sessions. This allows the  EventListener to check if
         # on_modified events happened to the views it cares about, or to other 
         # views which it doesn't care about.
-        self.watched_views = {}
+        self.sessions = []
 
     def on_modified_async(self, view):
         """Listens for modifications to views which are part of a currently
         active remote session."""
-        if view in watched_views.keys():
-            # get the body text of the whole buffer
-            buff = view.substr(sublime.Region(0, view.size()))
-            # send the deltas to the server
-            watched_views[view].send_deltas(buff)   
+        if sessions:
+            for session in sessions if view in session.view:
+                current_buffer = view.substr(sublime.Region(0, view.size())) 
+                session.send_diffs(current_buffer)  
 
     def on_close(self, view): 
         """Check to see if views I care about are closed, and if they are,
         drop them from my watched-views"""
-        if view in watched_views.keys():
-            del watched_views[view]      
+        if view in sessions.keys():
+            del sessions[view]      
 
 class StartSessionCommand(sublime_plugin.TextCommand):
     """Command to start a new RemoteCollab session for the current view"""
     get_buffer = lambda view: view.substr(sublime.Region(0, view.size()))
 
-        def run(self):     
-            # this will have to connect to the remote server (getting the address
-            # from the settings file), wait for the server to generate the session,
-            # and tell the user the access token. it'll then have to start watching
-            # the urrent view synchronizing
-            session_id = get_id_from_server()
-            DiffListener.watched_views[self.view] = Session(session_id, get_buffer(self.view))
-
+    def run(self):     
+        # this will have to connect to the remote server (getting the address
+        # from the settings file), wait for the server to generate the session,
+        # and tell the user the access token. it'll then have to start watching
+        # the urrent view synchronizing
+        session = Session(self.view, True)
+        DiffListener.sessions.append(session)
+        session.patch_listener()
+            
 class ConnectToSessionCommand(sublime_plugin.ApplicationCommand):
     """Command to connect to an external RemoteCollab session."""
     # this will have to connect to the remote server (configured in settings file),
     # send the session token, make a new view containing the contents of the remote
-    # session, and then start listening for modifications to that view and synchronizing
+    # session, and then start listening for modifications to that view and synchronizing   
+    def run(self):
+        session = Session(self.view, False)
+        DiffListener.sessions.append(session)
+        session.patch_listener()
+
+class CloseSessionCommand(sublime_plugin.ApplicationCommand):
+    """Command to close a RemoteCollab session."""
+    # this will have to connect to the remote server (configured in settings file),
+    # send the session token, make a new view containing the contents of the remote
+    # session, and then start listening for modifications to that view and synchronizing   
+    def run(self):
+        session = next((session for session in DiffListener.sessions if session.view = self.view), None)
+        if session not None:
+            session.end_session()
