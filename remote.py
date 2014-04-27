@@ -26,8 +26,9 @@ class DiffListener(sublime_plugin.EventListener):
     def on_close(self, view): 
         """Check to see if views I care about are closed, and if they are,
         drop them from my watched-views"""
-        if view in sessions.keys():
-            del sessions[view]      
+        for session in self.sessions: 
+        	if session.view is view:
+        		self.sessions.remove(session)
 
 class StartSessionCommand(sublime_plugin.TextCommand):
     """Command to start a new RemoteCollab session for the current view"""
@@ -63,7 +64,7 @@ class ConnectToSessionCommand(sublime_plugin.ApplicationCommand):
 class CloseSessionCommand(sublime_plugin.TextCommand):
     """Command to close a RemoteCollab session."""
     def __init__(self, *args, **kwargs):
-        sublime_plugin.ApplicationCommand.__init__(self, *args, **kwargs)
+        sublime_plugin.TextCommand.__init__(self, *args, **kwargs)
 
     # this will have to connect to the remote server (configured in settings file),
     # send the session token, make a new view containing the contents of the remote
