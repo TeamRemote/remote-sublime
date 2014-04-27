@@ -1,7 +1,8 @@
-import sublime, sublime_plugin
 from . import Session
+import sublime, sublime_plugin
 import socket
 import sys
+import threading
 
 class DiffListener(sublime_plugin.EventListener):
     """Listens for modifications to the view and gets the diffs using 
@@ -43,32 +44,41 @@ class StartSessionCommand(sublime_plugin.TextCommand):
         # from the settings file), wait for the server to generate the session,
         # and tell the user the access token. it'll then have to start watching
         # the urrent view synchronizing
-        session = Session(self.view, None)
-        df.sessions.append(session)
+        session = Session.Session(self.view, None)
+        self.df.sessions.append(session)
+        print("made a server")
         #session.patch_listener()
             
 class ConnectToSessionCommand(sublime_plugin.WindowCommand):
     """Command to connect to an external RemoteCollab session."""
     def __init__(self, *args, **kwargs):
         self.df = DiffListener()
-        sublime_plugin.ApplicationCommand.__init__(self, *args, **kwargs)
+        sublime_plugin.WindowCommand.__init__(self, *args, **kwargs)
 
     # this will have to connect to the remote server (configured in settings file),
     # send the session token, make a new view containing the contents of the remote
     # session, and then start listening for modifications to that view and synchronizing   
     def run(self):
-        self.window.show_input_panel(
-            'Session IP Address',
-            '',
-            self.on_done,
-            self.on_change,
-            self.on_cancel)
+        # self.window.show_input_panel(
+        #     'Session IP Address',
+        #     '',
+        #     self.on_done,
+        #     self.on_change,
+        #     self.on_cancel)
+        session = Session.Session(self.window.new_file(), 'localhost')
+        self.df.sessions.append(session)
 
     def on_done(self, input):
         """Input panel handler - creates a new session connected to the given IP address. """
-        session = Session(self.window.new_file(), input)
-        df.sessions.append(session)
+        
+        session = Session.Session(self.window.new_file(), input)
+        self.df.sessions.append(session)
         #session.patch_listener()
+    def on_change(self):
+        pass
+
+    def on_cancel(self):
+        pass
 
 class CloseSessionCommand(sublime_plugin.TextCommand):
     """Command to close a RemoteCollab session."""
