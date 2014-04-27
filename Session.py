@@ -5,11 +5,13 @@ import sys
 
 class Session:
     
-    def __init__(self, session_id, last_buffer, is_creator):
+    def __init__(self, session_id, shadow, is_creator):
         self.session_id = session_id
-        self.shadow = last_buffer
+        self.shadow = shadow
         self.server = None
         self.client = None
+        self.dmp = diff_match_patch.diff_match_patch()
+        dmp.Diff_Timeout = 0
         if is_creator:
         	self.server = create_server()
         	self.client = get_remote_client()
@@ -20,13 +22,19 @@ class Session:
     def send_diffs(self, new_buffer):
         """Sends deltas to the server over the current connection and sets the 
         passed buffer as this view's buffer."""
-        diff = diff(self.last_buffer, new_buffer)
-        
+	    diffs = dmp.diff_main(self.shadow, new_buffer)
+	    patch = dmp.patch_make(shadow, diffs)
+ 		self.client.send(dmp.patch_toText(patch))
         self.shadow = new_buffer
 
     def listen_for_patch(self, server):
-    	# TODO: 
-
+    	while True: 
+    	    client, address = s.accept() 
+    	    data = client.recv(size) 
+    	    if data:
+    	        patch = dmp.patch_fromText(data) 
+    	        self.shadow, results = dmp.patch_apply(patch, self.shadow)
+    			#appy patch to view as well	
     def create_server():
     	host = '' 
     	port = 50000 
