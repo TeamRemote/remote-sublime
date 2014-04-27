@@ -37,16 +37,26 @@ class StartSessionCommand(sublime_plugin.TextCommand):
         # from the settings file), wait for the server to generate the session,
         # and tell the user the access token. it'll then have to start watching
         # the urrent view synchronizing
-        session = Session(self.view, is_true)
-        DiffListener.sessions.append(session) = Session(session_id, get_buffer(self.view), is_true)
-        session.patch
+        session = Session(self.view, True)
+        DiffListener.sessions.append(session)
+        session.patch_listener()
             
 class ConnectToSessionCommand(sublime_plugin.ApplicationCommand):
     """Command to connect to an external RemoteCollab session."""
     # this will have to connect to the remote server (configured in settings file),
     # send the session token, make a new view containing the contents of the remote
-    # session, and then start listening for modifications to that view and synchronizing
-    
+    # session, and then start listening for modifications to that view and synchronizing   
     def run(self):
-        
-        
+        session = Session(self.view, False)
+        DiffListener.sessions.append(session)
+        session.patch_listener()
+
+class CloseSessionCommand(sublime_plugin.ApplicationCommand):
+    """Command to close a RemoteCollab session."""
+    # this will have to connect to the remote server (configured in settings file),
+    # send the session token, make a new view containing the contents of the remote
+    # session, and then start listening for modifications to that view and synchronizing   
+    def run(self):
+        session = next((session for session in DiffListener.sessions if session.view = self.view), None)
+        if session not None:
+            session.end_session()
