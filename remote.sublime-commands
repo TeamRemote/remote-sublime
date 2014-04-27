@@ -4,7 +4,11 @@
         "command": "connect_to_session"
     },
     {
-        "caption": ": Host Session",
-        "command": "host_session"
-    }
+        "caption": "Remote: Host Session",
+        "command": "start_session"
+    },
+    {
+        "caption": "Remote: Close Session",
+        "command": "close_session"
+    },
 ]

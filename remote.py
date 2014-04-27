@@ -60,7 +60,7 @@ class ConnectToSessionCommand(sublime_plugin.ApplicationCommand):
         df.sessions.append(session)
         #session.patch_listener()
 
-class CloseSessionCommand(sublime_plugin.ApplicationCommand):
+class CloseSessionCommand(sublime_plugin.TextCommand):
     """Command to close a RemoteCollab session."""
     def __init__(self, *args, **kwargs):
         sublime_plugin.ApplicationCommand.__init__(self, *args, **kwargs)
