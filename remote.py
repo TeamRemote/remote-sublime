@@ -19,7 +19,6 @@ class DiffListener(sublime_plugin.EventListener):
         active remote session."""
         if sessions:
             for session in sessions if view in session.view:
-                # get the body text of the whole buffer
                 current_buffer = view.substr(sublime.Region(0, view.size())) 
                 session.send_diffs(current_buffer)  
 
@@ -33,15 +32,14 @@ class StartSessionCommand(sublime_plugin.TextCommand):
     """Command to start a new RemoteCollab session for the current view"""
     get_buffer = lambda view: view.substr(sublime.Region(0, view.size()))
 
-        def run(self):     
-            # this will have to connect to the remote server (getting the address
-            # from the settings file), wait for the server to generate the session,
-            # and tell the user the access token. it'll then have to start watching
-            # the urrent view synchronizing
-            #session_id = get_id_from_server()
-            DiffListener.watched_views[self.view] = Session(session_id, get_buffer(self.view), is_true)
-            
-          
+    def run(self):     
+        # this will have to connect to the remote server (getting the address
+        # from the settings file), wait for the server to generate the session,
+        # and tell the user the access token. it'll then have to start watching
+        # the urrent view synchronizing
+        session = Session(self.view, is_true)
+        DiffListener.sessions.append(session) = Session(session_id, get_buffer(self.view), is_true)
+        session.patch
             
 class ConnectToSessionCommand(sublime_plugin.ApplicationCommand):
     """Command to connect to an external RemoteCollab session."""
