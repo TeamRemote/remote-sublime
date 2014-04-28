@@ -101,3 +101,6 @@ class CloseSessionCommand(sublime_plugin.TextCommand):
         if session is not None:
             session.end_session()
 
+class ReplaceViewCommand(sublime_plugin.TextCommand):
+    def run(self, edit, data):
+        self.view.replace(edit, sublime.Region(0, self.view.size()), data)

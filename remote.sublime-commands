@@ -11,4 +11,8 @@
         "caption": "Remote: Close Session",
         "command": "close_session"
     },
+    {
+        "caption": "Replace view",
+        "command": "replace_view"
+    },
 ]

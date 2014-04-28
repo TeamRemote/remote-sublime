@@ -86,11 +86,13 @@ class Session(threading.Thread):
 
             data = client.recv(4096)
             if data:
+                data = data.decode("utf-8")
                 # IF this is not host and we have not received shadow, recv shadow and set bool flag to true
                 if not self.recv_shadow:
                     self.shadow = data
                     sublime.set_timeout(lambda: self.callback(data), 1)
                     self.recv_shadow = True 
+                #Else if it is the host without an initial connection
                 elif self.host and not initConn:
                     print(data)
                     initConn = True
@@ -103,7 +105,7 @@ class Session(threading.Thread):
                     sublime.set_timeout(lambda: self.callback(current_buffer), 1)
 
     def callback(self, data):
-        self.view.replace(self.edit, sublime.Region(0, self.view.size), data)       
+        self.view.run_command("replace_view",{"data": data})
 
     def send_diffs(self, new_buffer):
         """Sends deltas to the server over the current connection and sets the 
@@ -111,23 +113,24 @@ class Session(threading.Thread):
         diffs = self.dmp.diff_main(self.shadow, new_buffer)
         patch = self.dmp.patch_make(shadow, diffs)
         if self.client is not None:
-            self.client.send(dmp.patch_toText(patch))
+            self.client.send(dmp.patch_toText(patch).encode(encoding='UTF-8'))
         self.shadow = new_buffer
 
-    def patch_listener(self):
-        while True:
-            client, address = self.server.accept()
-            if self.client is None:
-                self.client = client
-            data = client.recv(size)
-            if data:
-                # Check checksum etc.
-                patch = dmp.patch_fromText(data)
-                self.shadow, shadow_results = self.dmp.patch_apply(patch, self.shadow)
-                current_buffer = get_buffer(self.view)
-                current_buffer, view_results = self.dmp.patch_apply(patch, current_buffer)
-                # Replace the view contents with the new buffer
-                self.view.replace(edit, sublime.Region(0, self.view.size), current_buffer)
+    # def patch_listener(self):
+    #     while True:
+    #         client, address = self.server.accept()
+    #         if self.client is None:
+    #             self.client = client
+    #         data = client.recv(size)
+    #         if data:
+    #             # Check checksum etc.
+    #             patch = dmp.patch_fromText(data)
+    #             self.shadow, shadow_results = self.dmp.patch_apply(patch, self.shadow)
+    #             current_buffer = get_buffer(self.view)
+    #             current_buffer, view_results = self.dmp.patch_apply(patch, current_buffer)
+    #             # Replace the view contents with the new buffer
+
+    #             self.view.replace(edit, sublime.Region(0, self.view.size), current_buffer)
 
     def end_session(self):
         self.server.close()
