@@ -20,7 +20,10 @@ class Server (asyncore.dispatcher_with_send):
         self.parent.address = addr
         print(self.parent.address)
         print("[{n}] incoming connection from ".format(n = self), addr)
-        PatchHandler(sock, self.parent)
+        try:
+            PatchHandler(sock, self.parent)
+        except Exception as e:
+            print ("[{n}] caught ".format(n = self), e)
 
     def handle_connect(self):
         sock, addr = self.accept()
@@ -29,12 +32,12 @@ class Server (asyncore.dispatcher_with_send):
         print ("[{n}] sent shadow".format(n = self.name))
 
 class PatchHandler(asyncore.dispatcher_with_send):
-    def __init__(self, parent):
+    def __init__(self, sock, parent):
         asyncore.dispatcher.__init__(self)
         self.session = parent
     def handle_read(self):
         #Needs to handle stuff
-        data = self.recv(4096)
+        data = self.sock.recv(4096)
         data = data.decode("utf-8")
         if parent.client is None:
             parent.client = Client(50000,self.parent)
@@ -55,6 +58,7 @@ class Client(asyncore.dispatcher_with_send):
         self.connect((host,port))
         print("[{n}] tried connecting to server ".format(n = self), host, port)
         self.buffer = []
+        self.parent = parent
 
     def handle_close(self):
         self.close()
