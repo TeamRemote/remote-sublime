@@ -36,7 +36,8 @@ class PatchHandler(asyncore.dispatcher_with_send):
         #Needs to handle stuff
         data = self.recv(4096)
         data = data.decode("utf-8")
-        ###If the shadow is empty/ some bool flag/ it is not host
+        if parent.client is None:
+            parent.client = Client(50000,self.parent)
         ###...this should be the shadow not the patch....
         # else do normal patch stuff
         patch = self.parent.dmp.patch_fromText(data)
@@ -63,7 +64,9 @@ class Client(asyncore.dispatcher_with_send):
         self.send(sent)
 
     def handle_read(self):
-        self.parent.shadow = self.recv(4096)    # ???
+        data = self.recv(4096)
+        data = data.decode(encoding="utf-8")
+        self.parent.shadow = data 
 
     def writable(self):
         return (len(self.buffer) > 0)
@@ -106,6 +109,14 @@ class Session(threading.Thread):
     def callback(self, data):
         self.view.run_command("replace_view",{"data": data})
 
+    def run(self):
+        asyncore.loop()
+
     def end_session(self):
         self.server.close()
         self.client.close()
+
+# class DiffHandler(sublime_plugin.EventListener):
+#     def __init__
+#     def on_modified_async(self, view):
+#         self.view
