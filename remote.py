@@ -44,7 +44,7 @@ class StartSessionCommand(sublime_plugin.TextCommand):
         # from the settings file), wait for the server to generate the session,
         # and tell the user the access token. it'll then have to start watching
         # the urrent view synchronizing
-        session = Session.Session(self.view, True)
+        session = Session.Session(self.view, True, edit)
         self.df.sessions.append(session)
         "Starting Host server"
         session.start()
@@ -53,16 +53,16 @@ class StartSessionCommand(sublime_plugin.TextCommand):
         # print("made a server")
         #session.patch_listener()
             
-class ConnectToSessionCommand(sublime_plugin.WindowCommand):
+class ConnectToSessionCommand(sublime_plugin.TextCommand):
     """Command to connect to an external RemoteCollab session."""
     def __init__(self, *args, **kwargs):
         self.df = DiffListener()
-        sublime_plugin.WindowCommand.__init__(self, *args, **kwargs)
+        sublime_plugin.TextCommand.__init__(self, *args, **kwargs)
 
     # this will have to connect to the remote server (configured in settings file),
     # send the session token, make a new view containing the contents of the remote
     # session, and then start listening for modifications to that view and synchronizing   
-    def run(self):
+    def run(self, edit):
         # self.window.show_input_panel(
         #     'Session IP Address',
         #     '',
@@ -70,7 +70,7 @@ class ConnectToSessionCommand(sublime_plugin.WindowCommand):
         #     self.on_change,
         #     self.on_cancel)
         print("Starting joiner session")
-        session = Session.Session(self.window.new_file(), False)
+        session = Session.Session(self.view, False, edit)
 
         self.df.sessions.append(session)
         print("Starting joiner server")

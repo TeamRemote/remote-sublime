@@ -48,13 +48,14 @@ def create_client(port):
     
 class Session(threading.Thread): 
     
-    def __init__(self, view, host):
+    def __init__(self, view, host, edit):
         """
         Constructor for a Session. Host is the IP address of the host we are connecting to.
         If we are the host, host should equal 'None'.
         """
         threading.Thread.__init__(self)
         self.view = view
+        self.edit = edit
         self.shadow = get_buffer(self.view)
         self.server = None
         self.client = None
@@ -102,7 +103,7 @@ class Session(threading.Thread):
                     sublime.set_timeout(lambda: self.callback(current_buffer), 1)
 
     def callback(self, data):
-        self.view.replace(edit, sublime.Region(0, self.view.size), data)       
+        self.view.replace(self.edit, sublime.Region(0, self.view.size), data)       
 
     def send_diffs(self, new_buffer):
         """Sends deltas to the server over the current connection and sets the 
