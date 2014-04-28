@@ -22,6 +22,7 @@ class DiffListener(sublime_plugin.EventListener):
             for session in self.sessions:
                 if session.view is view:
                     current_buffer = view.substr(sublime.Region(0, view.size())) 
+                    print("diff")
                     session.send_diffs(current_buffer)  
 
     def on_close(self, view): 
@@ -46,7 +47,6 @@ class StartSessionCommand(sublime_plugin.TextCommand):
         # the urrent view synchronizing
         session = Session.Session(self.view, True, edit)
         self.df.sessions.append(session)
-        "Starting Host server"
         session.start()
         # session = Session.Session(self.view, None)
          
@@ -96,7 +96,7 @@ class CloseSessionCommand(sublime_plugin.TextCommand):
     # this will have to connect to the remote server (configured in settings file),
     # send the session token, make a new view containing the contents of the remote
     # session, and then start listening for modifications to that view and synchronizing   
-    def run(self):
+    def run(self,edit):
         session = next((session for session in DiffListener.sessions if session.view is self.view), None)
         if session is not None:
             session.end_session()

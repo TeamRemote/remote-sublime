@@ -6,19 +6,10 @@ import threading
 
 get_buffer = lambda view: view.substr(sublime.Region(0, view.size()))
 
-def get_remote_client(server):
-    client_connected = False
-    client_socket = None
-    size = 4096
-    while not client_connected:
-        client_socket, address = server.accept()
-        client_connected = True
-        client_socket.send("Connected")
-    return client_socket
 def create_server(port):
     host = '' 
     # port = 12345
-    backlog = 5 
+    backlog = 1
     size = 4096     
     try: 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
@@ -29,6 +20,7 @@ def create_server(port):
             s.close() 
         print("Could not open socket: ", e)
         sys.exit(1) 
+    print(s)
     return s
 def create_client(port):
     host = 'localhost'
@@ -43,7 +35,7 @@ def create_client(port):
             s.close() 
         print("Could not open socket: ", e) 
         sys.exit(1) 
-    s.send(b'Init connection')    
+    s.send(b'')    
     return s    
     
 class Session(threading.Thread): 
@@ -69,33 +61,34 @@ class Session(threading.Thread):
         else:
             self.recv_shadow = False
             print("Creating server")
-            self.server = create_server(50000) #Client2 to connect to server on 12345
+            self.server = create_server(50000) #Server2 on 50000
             print("Creating client")
-            self.client = create_client(12345) #Server2 on 50000
-            
-    
+            self.client = create_client(12345) #Client2 to connect to server on 12345
+           
     def run(self):
         print("In the run method")
         initConn = False
         while True:
             client, address = self.server.accept()
+            print(client, address)
             if self.client is None:
                 self.client = create_client(50000)
-                if not self.host: #If it is not host send over the shadow
-                    client.send(self.shadow)
-
+                print("Created client on host")
+                if self.host: #If it is host send over the shadow to the joiner
+                    print("Trying to send shadow: ", self.shadow)
+                    client.send(self.shadow.encode(encoding="utf-8"))
+                    print("Finished sending shadow")
             data = client.recv(4096)
+            print("OMG DATA",data)
             if data:
                 data = data.decode("utf-8")
+                print("Received :", data)
                 # IF this is not host and we have not received shadow, recv shadow and set bool flag to true
-                if not self.recv_shadow:
+                if self.recv_shadow is False:
+                    print("Receiving shadow", self.shadow)
                     self.shadow = data
                     sublime.set_timeout(lambda: self.callback(data), 1)
                     self.recv_shadow = True 
-                #Else if it is the host without an initial connection
-                elif self.host and not initConn:
-                    print(data)
-                    initConn = True
                 else:   
                     patch = dmp.patch_fromText(data)
                     self.shadow, shadow_results = self.dmp.patch_apply(patch, self.shadow)
@@ -113,24 +106,9 @@ class Session(threading.Thread):
         diffs = self.dmp.diff_main(self.shadow, new_buffer)
         patch = self.dmp.patch_make(shadow, diffs)
         if self.client is not None:
+            print("Sending diffs")
             self.client.send(dmp.patch_toText(patch).encode(encoding='UTF-8'))
         self.shadow = new_buffer
-
-    # def patch_listener(self):
-    #     while True:
-    #         client, address = self.server.accept()
-    #         if self.client is None:
-    #             self.client = client
-    #         data = client.recv(size)
-    #         if data:
-    #             # Check checksum etc.
-    #             patch = dmp.patch_fromText(data)
-    #             self.shadow, shadow_results = self.dmp.patch_apply(patch, self.shadow)
-    #             current_buffer = get_buffer(self.view)
-    #             current_buffer, view_results = self.dmp.patch_apply(patch, current_buffer)
-    #             # Replace the view contents with the new buffer
-
-    #             self.view.replace(edit, sublime.Region(0, self.view.size), current_buffer)
 
     def end_session(self):
         self.server.close()
