@@ -3,7 +3,7 @@ import sublime, sublime_plugin
 import socket
 import sys
 import threading
-
+import asyncore
 class DiffListener(sublime_plugin.EventListener):
     """Listens for modifications to the view and gets the diffs using 
     Operational Transformation"""
@@ -49,6 +49,9 @@ class StartSessionCommand(sublime_plugin.TextCommand):
         print("Before session")
         session = Session.Session(self.view, None)
         self.df.sessions.append(session)
+        print("Starting loop")
+        asyncore.loop()
+        
         # print("Session appended")
         # print("Before thread")
         # t = threading.Thread(target=session.patch_listener())
@@ -86,6 +89,7 @@ class ConnectToSessionCommand(sublime_plugin.WindowCommand):
         """Input panel handler - creates a new session connected to the given IP address. """       
         session = Session.Session(self.window.new_file(), input)
         self.df.sessions.append(session)
+        asyncore.loop()
 
     def on_change(self):
         pass

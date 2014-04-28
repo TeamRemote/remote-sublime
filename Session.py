@@ -5,8 +5,6 @@ import sys
 
 get_buffer = lambda view: view.substr(sublime.Region(0, view.size()))
 
-
-
 class Server (asyncore.dispatcher_with_send):
     def __init__(self, host, port, parent):
         asyncore.dispatcher.__init__(self)
@@ -17,12 +15,15 @@ class Server (asyncore.dispatcher_with_send):
 
     def handle_accepted(self, sock, addr):
         self.parent.address = addr
+        print(self.parent.address)
+        print("Connected to", addr)
         PatchHandler(sock)
 
     def handle_connect(self):
-        sock, addr = self.accept()
-        print("sent shadow: ", self.parent.shadow)
-        sock.send(self.parent.shadow)
+        print("In handling method")
+        #sock, addr = self.accept()
+        #print("sent shadow: ", self.parent.shadow)
+        #sock.send(self.parent.shadow)
 
 class PatchHandler(asyncore.dispatcher_with_send):
     def handle_read(self):
@@ -38,6 +39,7 @@ class Client(asyncore.dispatcher_with_send):
     def __init__(self, host, port, parent):
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+        print("Trying to connect to", host, port)
         self.connect((host,port))
         self.buffer = []
 
@@ -73,11 +75,13 @@ class Session:
         if host is None:
             print ("i'm host")
             self.server = Server('localhost', 12345, self)
-            self.client = Client('localhost',0,self)
+            self.client = Client('localhost',50000,self)
+            
         else:
             print ("i'm not host?")
-            self.client = Client(host, 0, self)
-            self.server = Server('localhost',0,self)
+            self.client = Client('localhost', 12345, self)
+            self.server = Server('localhost',50000,self)
+        
             
     def send_diffs(self, new_buffer):
         """Sends deltas to the server over the current connection and sets the 
