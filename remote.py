@@ -41,7 +41,6 @@ class StartSessionCommand(sublime_plugin.TextCommand):
         sublime_plugin.TextCommand.__init__(self, *args, **kwargs)
         print("init after super")
 
-
     def run(self, edit):     
         # this will have to connect to the remote server (getting the address
         # from the settings file), wait for the server to generate the session,
@@ -50,12 +49,21 @@ class StartSessionCommand(sublime_plugin.TextCommand):
         print("Before session")
         session = Session.Session(self.view, None)
         self.df.sessions.append(session)
-        print("Session appended")
-        print("Before thread")
-        t = threading.Thread(target=session.patch_listener())
-        t.daemon = True
-        print(t.name + "is running for host command")
+        # print("Session appended")
+        # print("Before thread")
+        # t = threading.Thread(target=session.patch_listener())
+        # t.daemon = True
+        # print(t.name + "is running for host command")
         #t.start()
+
+    def is_enabled(*args):
+        return True
+
+    def is_visible(*args):
+        return True
+
+    def description(*args):
+        return "Host a Remote collaboration session."
             
 class ConnectToSessionCommand(sublime_plugin.WindowCommand):
     """Command to connect to an external RemoteCollab session."""
