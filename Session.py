@@ -43,6 +43,7 @@ def create_client(port):
             s.close() 
         print("Could not open socket: ", e) 
         sys.exit(1) 
+    s.send(b'Init connection')    
     return s    
     
 class Session(threading.Thread): 
@@ -74,20 +75,24 @@ class Session(threading.Thread):
     
     def run(self):
         print("In the run method")
+        initConn = False
         while True:
             client, address = self.server.accept()
             if self.client is None:
-                self.client = client
+                self.client = create_client(50000)
                 if not self.host: #If it is not host send over the shadow
                     client.send(self.shadow)
 
             data = client.recv(4096)
             if data:
                 # IF this is not host and we have not received shadow, recv shadow and set bool flag to true
-                if not recv_shadow:
+                if not self.recv_shadow:
                     self.shadow = data
                     sublime.set_timeout(lambda: self.callback(data), 1)
                     self.recv_shadow = True 
+                elif self.host and not initConn:
+                    print(data)
+                    initConn = True
                 else:   
                     patch = dmp.patch_fromText(data)
                     self.shadow, shadow_results = self.dmp.patch_apply(patch, self.shadow)
