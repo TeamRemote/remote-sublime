@@ -5,56 +5,14 @@ import sys
 
 get_buffer = lambda view: view.substr(sublime.Region(0, view.size()))
 
-#def create_server():
-#    host = '' 
-#    port = 4092
-#    backlog = 5 
-#    size = 4096     
-#    try: 
-#        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-#        s.bind((host,port)) 
-#        s.listen(backlog) 
-#    except OSError as e: 
-#        if s: 
-#            s.close() 
-#        print("Could not open socket: ", e)
-#        sys.exit(1) 
-#    return s
 
-#def get_remote_client(server):
-#    client_connected = False
-#    client_socket = None
-#    size = 4096
-#    while not client_connected:
-#        client_socket, address = server.accept()
-#        client_connected = True
-#        client_socket.send("Connected")
-#    return client_socket
-
-#def create_client(host):
-#    print("help i'm trapped in a client factory")
-#    port = 4092
-#    size = 4096 
-#    s = None 
-#    try:
-#        print("i'm trying!")
-#        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-#        s.connect((host,port)) 
-#    except OSError as e: 
-#        if s: 
-#            s.close() 
-#        print("Could not open socket: ", e) 
-#        sys.exit(1)
-#    else:
-#        print("Unexpected error:", sys.exc_info()[0])
-#    return s
 
 class Server (asyncore.dispatcher_with_send):
     def __init__(self, host, port, parent):
         asyncore.dispatcher.__init__(self)
         self.parent = parent
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.bind((host, 12345))
+        self.bind((host, port))
         self.listen(1)
 
     def handle_accepted(self, sock, addr):
@@ -63,6 +21,7 @@ class Server (asyncore.dispatcher_with_send):
 
     def handle_connect(self):
         sock, addr = self.accept()
+        print("sent shadow: ", self.parent.shadow)
         sock.send(self.parent.shadow)
 
 class PatchHandler(asyncore.dispatcher_with_send):
@@ -105,6 +64,7 @@ class Session:
         print("im session __init__")
         self.view = view
         self.shadow = get_buffer(self.view)
+        print (self.shadow)
         self.server = None
         self.client = None
         self.address = None
@@ -112,12 +72,12 @@ class Session:
         self.dmp.Diff_Timeout = 0
         if host is None:
             print ("i'm host")
-            self.server = Server('', 12345, self)
-            self.client = Client('localhost', 12345, self)
+            self.server = Server('localhost', 12345, self)
+            self.client = Client('localhost',0,self)
         else:
             print ("i'm not host?")
-            self.client = Client(host, 12345, self)
-            self.server = Server(host, 12345, self)
+            self.client = Client(host, 0, self)
+            self.server = Server('localhost',0,self)
             
     def send_diffs(self, new_buffer):
         """Sends deltas to the server over the current connection and sets the 

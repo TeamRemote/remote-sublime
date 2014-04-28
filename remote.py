@@ -86,10 +86,7 @@ class ConnectToSessionCommand(sublime_plugin.WindowCommand):
         """Input panel handler - creates a new session connected to the given IP address. """       
         session = Session.Session(self.window.new_file(), input)
         self.df.sessions.append(session)
-        t = threading.Thread(target=session.patch_listener())
-        t.daemon = True
-        t.start()
-        print(t.name + "is running for connect command")
+
     def on_change(self):
         pass
 
