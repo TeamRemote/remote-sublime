@@ -48,9 +48,9 @@ class StartSessionCommand(sublime_plugin.TextCommand):
         session = Session.Session(self.view, True, edit)
         self.df.sessions.append(session)
         session.start()
-        # session = Session.Session(self.view, None)
+        #session = Session.Session(self.view, None)
          
-        # print("made a server")
+        print("made a server")
         #session.patch_listener()
             
 class ConnectToSessionCommand(sublime_plugin.TextCommand):
@@ -82,11 +82,6 @@ class ConnectToSessionCommand(sublime_plugin.TextCommand):
         session = Session.Session(self.window.new_file(), input)
         self.df.sessions.append(session)
         #session.patch_listener()
-    def on_change(self):
-        pass
-
-    def on_cancel(self):
-        pass
 
 class CloseSessionCommand(sublime_plugin.TextCommand):
     """Command to close a RemoteCollab session."""
@@ -97,7 +92,7 @@ class CloseSessionCommand(sublime_plugin.TextCommand):
     # send the session token, make a new view containing the contents of the remote
     # session, and then start listening for modifications to that view and synchronizing   
     def run(self,edit):
-        session = next((session for session in DiffListener.sessions if session.view is self.view), None)
+        session = next((session for session in df.sessions if session.view is self.view), None)
         if session is not None:
             session.end_session()
 

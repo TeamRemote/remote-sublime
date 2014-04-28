@@ -4,6 +4,8 @@ import sublime, sublime_plugin
 import sys
 import threading
 get_buffer = lambda view: view.substr(sublime.Region(0, view.size()))
+host = 'localhost'
+
 
 class Server (asyncore.dispatcher_with_send):
     def __init__(self, port, parent):
@@ -20,10 +22,10 @@ class Server (asyncore.dispatcher_with_send):
         PatchHandler(sock, self.parent)
 
     def handle_connect(self):
-        print("In handling method")
-        #sock, addr = self.accept()
-        #print("sent shadow: ", self.parent.shadow)
-        #sock.send(self.parent.shadow)
+        sock, addr = self.accept()
+        print("[{n}] got a connection from ".format(n = self.name), sock, addr)
+        sock.send(self.parent.shadow)
+        print ("[{n}] sent shadow".format(n = self.name))
 
 class PatchHandler(asyncore.dispatcher_with_send):
     def __init__(self, parent):
@@ -49,6 +51,7 @@ class Client(asyncore.dispatcher_with_send):
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         print("Trying to connect to", host, port)
         self.connect((host,port))
+        print("[{n}] connected to server ".format(n = self), host, port)
         self.buffer = []
 
     def handle_close(self):
@@ -82,14 +85,14 @@ class Session(threading.Thread):
         self.host = host
         if self.host:
             self.recv_shadow = True
-            self.server = create_server(12345, self) #Server1 on 12345
+            self.server = Server(12345, self) #Server1 on 12345
             #self.client = create_client(50000) #Client to connect to server o
         else:
             self.recv_shadow = False
             print("Creating server")
-            self.server = create_server(50000, self) #Server2 on 50000
+            self.server = Server(50000, self) #Server2 on 50000
             print("Creating client")
-            self.client = create_client(12345, self) #Client2 to connect to server on 12345        
+            self.client = Client(12345, self) #Client2 to connect to server on 12345        
             
     def send_diffs(self, new_buffer):
         """Sends deltas to the server over the current connection and sets the 
