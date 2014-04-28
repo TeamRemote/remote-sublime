@@ -10,7 +10,7 @@ class Server (asyncore.dispatcher_with_send):
         asyncore.dispatcher.__init__(self)
         self.parent = parent
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.bind((host, port))
+        self.bind(('localhost', port))
         self.listen(1)
 
     def handle_accepted(self, sock, addr):
@@ -33,7 +33,8 @@ class PatchHandler(asyncore.dispatcher_with_send):
         #Needs to handle stuff
         data = self.recv(4096)
         data = data.decode("utf-8")
-        ###If the shadow is empty/ some bool flag/ it is not host
+        if parent.client is None:
+            parent.client = Client(50000,self.parent)
         ###...this should be the shadow not the patch....
         # else do normal patch stuff
         patch = self.parent.dmp.patch_fromText(data)
@@ -47,8 +48,8 @@ class Client(asyncore.dispatcher_with_send):
     def __init__(self, port, parent):
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        print("Trying to connect to", host, port)
-        self.connect((host,port))
+        print("Trying to connect to", 'localhost', port)
+        self.connect(('localhost',port))
         self.buffer = []
 
     def handle_close(self):
@@ -59,7 +60,9 @@ class Client(asyncore.dispatcher_with_send):
         self.send(sent)
 
     def handle_read(self):
-        self.parent.shadow = self.recv(4096)    # ???
+        data = self.recv(4096)
+        data = data.decode(encoding="utf-8")
+        self.parent.shadow = data 
 
     def writable(self):
         return (len(self.buffer) > 0)
@@ -82,14 +85,14 @@ class Session(threading.Thread):
         self.host = host
         if self.host:
             self.recv_shadow = True
-            self.server = create_server(12345, self) #Server1 on 12345
+            self.server = Server(12345, self) #Server1 on 12345
             #self.client = create_client(50000) #Client to connect to server o
         else:
             self.recv_shadow = False
             print("Creating server")
-            self.server = create_server(50000, self) #Server2 on 50000
+            self.server = Server(50000, self) #Server2 on 50000
             print("Creating client")
-            self.client = create_client(12345, self) #Client2 to connect to server on 12345        
+            self.client = Client(12345, self) #Client2 to connect to server on 12345        
             
     def send_diffs(self, new_buffer):
         """Sends deltas to the server over the current connection and sets the 
@@ -102,6 +105,14 @@ class Session(threading.Thread):
     def callback(self, data):
         self.view.run_command("replace_view",{"data": data})
 
+    def run(self):
+        asyncore.loop()
+
     def end_session(self):
         self.server.close()
         self.client.close()
+
+# class DiffHandler(sublime_plugin.EventListener):
+#     def __init__
+#     def on_modified_async(self, view):
+#         self.view
