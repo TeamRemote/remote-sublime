@@ -13,7 +13,7 @@ class Server (asyncore.dispatcher_with_send):
         self.parent = parent
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.bind((host, port))
-        print ("[{n}] bound {ip}:{p}".format(n = self, ip = host, port = port))
+        print ("[{n}] bound {ip}:{p}".format(n = self, ip = host, p = port))
         self.listen(1)
 
     def handle_accepted(self, sock, addr):
