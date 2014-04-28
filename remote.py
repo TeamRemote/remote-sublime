@@ -37,17 +37,25 @@ class StartSessionCommand(sublime_plugin.TextCommand):
 
     def __init__(self, *args, **kwargs):
         self.df = DiffListener()
+        print("init")
         sublime_plugin.TextCommand.__init__(self, *args, **kwargs)
+        print("init after super")
+
 
     def run(self, edit):     
         # this will have to connect to the remote server (getting the address
         # from the settings file), wait for the server to generate the session,
         # and tell the user the access token. it'll then have to start watching
         # the urrent view synchronizing
+        print("Before session")
         session = Session.Session(self.view, None)
         self.df.sessions.append(session)
-        print("made a server")
-        #session.patch_listener()
+        print("Session appended")
+        print("Before thread")
+        t = threading.Thread(target=session.patch_listener())
+        t.daemon = True
+        print(t.name + "is running for host command")
+        #t.start()
             
 class ConnectToSessionCommand(sublime_plugin.WindowCommand):
     """Command to connect to an external RemoteCollab session."""
@@ -59,21 +67,21 @@ class ConnectToSessionCommand(sublime_plugin.WindowCommand):
     # send the session token, make a new view containing the contents of the remote
     # session, and then start listening for modifications to that view and synchronizing   
     def run(self):
-        # self.window.show_input_panel(
-        #     'Session IP Address',
-        #     '',
-        #     self.on_done,
-        #     self.on_change,
-        #     self.on_cancel)
-        session = Session.Session(self.window.new_file(), 'localhost')
-        self.df.sessions.append(session)
-
-    def on_done(self, input):
-        """Input panel handler - creates a new session connected to the given IP address. """
+        self.window.show_input_panel(
+            'Session IP Address',
+            '',
+            self.on_done,
+            self.on_change,
+            self.on_cancel)
         
+    def on_done(self, input):
+        """Input panel handler - creates a new session connected to the given IP address. """       
         session = Session.Session(self.window.new_file(), input)
         self.df.sessions.append(session)
-        #session.patch_listener()
+        t = threading.Thread(target=session.patch_listener())
+        t.daemon = True
+        t.start()
+        print(t.name + "is running for connect command")
     def on_change(self):
         pass
 
@@ -88,7 +96,7 @@ class CloseSessionCommand(sublime_plugin.TextCommand):
     # this will have to connect to the remote server (configured in settings file),
     # send the session token, make a new view containing the contents of the remote
     # session, and then start listening for modifications to that view and synchronizing   
-    def run(self):
+    def run(self,edit):
         session = next((session for session in DiffListener.sessions if session.view is self.view), None)
         if session is not None:
             session.end_session()

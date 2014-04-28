@@ -1,5 +1,5 @@
 from . import diff_match_patch
-import socket 
+import asyncore,socket 
 import sublime, sublime_plugin
 import sys
 
@@ -58,16 +58,13 @@ class Session:
         self.client = None
         self.dmp = diff_match_patch.diff_match_patch()
         self.dmp.Diff_Timeout = 0
-        print(host)
         if not host:
-        	self.server = create_server()
-        	#self.client = get_remote_client(self.server)
+            self.server = create_server()
+            self.client = create_client('')
         else:
-        	self.client = create_client('')
+            self.client = create_client('')
+            self.server = create_server()
             
-        	self.server = create_server()
-            
-
     def send_diffs(self, new_buffer):
         """Sends deltas to the server over the current connection and sets the 
         passed buffer as this view's buffer."""
@@ -77,6 +74,7 @@ class Session:
         self.shadow = new_buffer
 
     def patch_listener(self):
+        size = 4096
         while True:
             client, address = self.server.accept()
             data = client.recv(size)
