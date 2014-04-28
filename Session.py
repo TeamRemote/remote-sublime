@@ -23,7 +23,7 @@ class Server (asyncore.dispatcher_with_send):
         try:
             PatchHandler(sock, self.parent)
         except Exception as e:
-            print ("[{n}] caught ".format(n = self), e)
+            print ("[{n}] error starting patch handler:\n[{n}] caught  ".format(n = self), e)
 
     def handle_connect(self):
         sock, addr = self.accept()
@@ -35,7 +35,10 @@ class PatchHandler(asyncore.dispatcher_with_send):
     def __init__(self, sock, parent):
         asyncore.dispatcher.__init__(self)
         self.session = parent
+        print ("[PatchHandler] init'd")
+
     def handle_read(self):
+        print ("[PatchHandler] start handle-read")
         #Needs to handle stuff
         data = self.sock.recv(4096)
         data = data.decode("utf-8")
