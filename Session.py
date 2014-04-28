@@ -13,12 +13,13 @@ class Server (asyncore.dispatcher_with_send):
         self.parent = parent
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.bind((host, port))
+        print ("[{n}] bound {ip}:{p}".format(n = self, ip = host, port = port))
         self.listen(1)
 
     def handle_accepted(self, sock, addr):
         self.parent.address = addr
         print(self.parent.address)
-        print("Connected to", addr)
+        print("[{n}] incoming connection from ".format(n = self), addr)
         PatchHandler(sock, self.parent)
 
     def handle_connect(self):
@@ -51,7 +52,7 @@ class Client(asyncore.dispatcher_with_send):
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         print("Trying to connect to", host, port)
         self.connect((host,port))
-        print("[{n}] connected to server ".format(n = self), host, port)
+        print("[{n}] tried connecting to server ".format(n = self), host, port)
         self.buffer = []
 
     def handle_close(self):
