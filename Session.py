@@ -7,8 +7,6 @@ import sys
 import threading
 import time
 
-get_buffer = lambda view: view.substr(sublime.Region(0, view.size()))
-
 ENCODING = "utf_8"
 
 def debug(message):
@@ -70,12 +68,13 @@ class Session(threading.Thread):
         super(Session, self).__init__()
         self.port = 12345 # This should be set from prefs file later
         self.view = view
-        self.shadow = get_buffer(self.view)
+        self.shadow = self.get_buffer()
         self.dmp = diff_match_patch.diff_match_patch()
         self.dmp.Diff_Timeout = 0
         self.transmitter = None
         self.reciever = None
         self.socket = None
+        self.init_socket = None
         self.host = host
         self.start()
 
@@ -99,9 +98,10 @@ class Session(threading.Thread):
                 self.transmitter = Transmitter(conn, self)
                 self.transmitter.start()
                 self.reciever.start()
-                self.transmitter.transmit(get_buffer(self.view))
+                self.initial_patch()
                 print ("Sent initial buffer")
                 self.socket = conn
+                self.init_socket = sock
             else:
                 self.reciever = Reciever (sock, self)
                 self.transmitter = Transmitter (sock, self)
@@ -109,20 +109,34 @@ class Session(threading.Thread):
                 self.transmitter.start()
                 self.socket = sock
 
+    def initial_patch(self):
+        diffs = self.dmp.diff_main('', self.shadow)
+        patch = self.dmp.patch_make('', diffs)
+        self.transmitter.transmit(self.dmp.patch_toText(patch))
             
     def send_diffs(self, new_buffer):
         """Sends deltas to the server over the current connection and sets the 
         passed buffer as this view's buffer."""
         diffs = self.dmp.diff_main(self.shadow, new_buffer)
-        patch = self.dmp.patch_make(shadow, diffs)
+        patch = self.dmp.patch_make(self.shadow, diffs)
         self.transmitter.transmit(self.dmp.patch_toText(patch))
         self.shadow = new_buffer
 
     def patch_view (self, data):
         patch = self.dmp.patch_fromText(data)
         self.shadow, shadow_results = self.dmp.patch_apply(patch, self.shadow)
-        current_buffer = self.get_buffer(self.view)
-        self.view.replace(edit, sublime.Region(0, self.view.size()), current_buffer)
+        current_buffer = self.get_buffer()
+        try:
+            edit = self.view.begin_edit()
+            self.view.replace(edit, sublime.Region(0, self.view.size()), current_buffer)
+            self.view.end_edit()
+        except Exception as e:
+           debug ("Error occured while editing buffer " + e)
 
     def close(self):
         self.socket.close()
+        if self.init_socket is not None:
+            self.init_socket.close()
+
+    def get_buffer(self):
+        return self.view.substr(sublime.Region(0, self.view.size()))
