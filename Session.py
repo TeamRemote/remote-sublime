@@ -1,4 +1,5 @@
 from . import diff_match_patch
+from collections import deque
 import socket 
 import sublime
 import sublime_plugin
@@ -26,7 +27,7 @@ class Transmitter(threading.Thread):
         super(Transmitter, self).__init__()
         self.socket = socket
         self.parent = parent
-        self.queue = []
+        self.queue = deque([])
 
     def transmit(self, diff):
         self.queue.append(diff)
@@ -36,7 +37,7 @@ class Transmitter(threading.Thread):
         while True:
             if self.queue: 
                 # Pop off the first item in the queue and encode it
-                data = self.queue.pop().encode(ENCODING)
+                data = self.queue.popleft().encode(ENCODING)
                 # send the message over the socket
                 self.socket.send(data)
                 debug("sent patch over socket {s}".format(s = self.socket))
