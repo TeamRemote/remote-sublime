@@ -17,6 +17,7 @@ def debug(message):
         timestamp = time.strftime('%H:%M:%S')
         ), message)
 
+
 class Transmitter(threading.Thread):
     """
     Sends diffs over a socket.
