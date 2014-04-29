@@ -4,30 +4,42 @@ import sublime
 import sublime_plugin
 import sys
 import threading
+import time
+
 get_buffer = lambda view: view.substr(sublime.Region(0, view.size()))
 
 ENCODING = "utf_8"
+
+def debug(message):
+    t = time.localtime()
+    print("[{thread}: {timestamp}] ".format(
+        thread=threading.current_thread(), 
+        timestamp = time.strftime('%H:%M:%S')
+        ), message)
 
 class Transmitter(threading.Thread):
     """
     Sends diffs over a socket.
     """
     def __init__(self, socket, parent):
-        super(Sender, self).__init__()
+        super(Transmitter, self).__init__()
         self.socket = socket
         self.parent = parent
         self.queue = []
 
     def transmit(self, diff):
         self.queue.append(diff)
+        debug("transmitter enqueued {d}".format(d = diff))
 
     def run(self):
         while True:
-            if queue: 
+            if self.queue: 
                 # Pop off the first item in the queue and encode it
-                data = queue.pop().encode(ENCODING)
+                data = self.queue.pop().encode(ENCODING)
                 # send the message over the socket
                 self.socket.send(data)
+                debug("sent patch over socket {s}".format(s = self.socket))
+                debug("queue: {q}".format(q = self.queue))
 
 class Reciever (threading.Thread):
     """
@@ -42,42 +54,59 @@ class Reciever (threading.Thread):
         while True:
             data = self.socket.recv(4096)
             if data:
+                debug ("recieved data: {d}".format(d = data))
                 data = data.decode(ENCODING)
-                parent.patch_view(data)
+                self.parent.patch_view(data)
 
-class Session():
+class Session(threading.Thread):
     
-    def __init__(self, view, host, edit, is_host=False):
+    def __init__(self, view, host=False):
         """
         Constructor for a Session. Host is the IP address of the host we are connecting to.
         If we are the host, host should equal 'None'.
         """
-        self.host = host
+        super(Session, self).__init__()
         self.port = 12345 # This should be set from prefs file later
         self.view = view
-        self.edit = edit
         self.shadow = get_buffer(self.view)
         self.dmp = diff_match_patch.diff_match_patch()
         self.dmp.Diff_Timeout = 0
+        self.transmitter = None
+        self.reciever = None
+        self.socket = None
+        self.host = host
+        self.start()
 
+    def run(self):
         try:
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.socket.bind((self.host,self.port))
-            self.socket.listen(1)
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            if self.host is False:
+                sock.bind(('',self.port))
+                sock.listen(1)
+            else:
+                sock.connect((self.host, 12345))
         except OSError as e:
-            if self.socket:
-                self.socket.close()
+            if sock:
+                sock.close()
             print("Error opening socket: ", e)
-        else: 
-            conn, address = s.accept()
-            print ("Connected to ", address)
-            self.reciever = Reciever(conn, self)
-            self.transmitter = Transmitter(conn, self)
-            self.transmitter.run()
-            self.reciever.run()
-            if is_host:
+        else:
+            if self.host is False: 
+                conn, address = sock.accept()
+                print ("Accepted connection from ", address)
+                self.reciever = Reciever(conn, self)
+                self.transmitter = Transmitter(conn, self)
+                self.transmitter.start()
+                self.reciever.start()
                 self.transmitter.transmit(get_buffer(self.view))
                 print ("Sent initial buffer")
+                self.socket = conn
+            else:
+                self.reciever = Reciever (sock, self)
+                self.transmitter = Transmitter (sock, self)
+                self.reciever.start()
+                self.transmitter.start()
+                self.socket = sock
+
             
     def send_diffs(self, new_buffer):
         """Sends deltas to the server over the current connection and sets the 
@@ -87,7 +116,7 @@ class Session():
         self.transmitter.transmit(self.dmp.patch_toText(patch))
         self.shadow = new_buffer
 
-    def patch_view (self, text):
+    def patch_view (self, data):
         patch = self.dmp.patch_fromText(data)
         self.shadow, shadow_results = self.dmp.patch_apply(patch, self.shadow)
         current_buffer = self.get_buffer(self.view)

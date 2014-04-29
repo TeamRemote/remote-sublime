@@ -31,25 +31,12 @@ class DiffListener(sublime_plugin.EventListener):
             if self.session.view is view:
                 self.session.close()
 
-    def set_session(session):
-        self.session = session
-
 class StartSessionCommand(sublime_plugin.TextCommand):
     """Command to start a new RemoteCollab session for the current view"""
     get_buffer = lambda view: view.substr(sublime.Region(0, view.size()))
 
     def run(self, edit):     
-        self.window.show_input_panel(
-            'Remote Peer IP Address',
-             '',
-             self.on_done,
-             self.on_change,
-             self.on_cancel)
-
-    def on_done(self, input):
-        """Input panel handler - creates a new session connected to the given IP address. """
-
-        DiffListener.set_session(Session.Session(self.view, input, edit, is_host=True))
+        DiffListener.session = Session.Session(self.view)
         print ("Started hosting session")
        
 class ConnectToSessionCommand(sublime_plugin.WindowCommand):
@@ -58,7 +45,7 @@ class ConnectToSessionCommand(sublime_plugin.WindowCommand):
     # this will have to connect to the remote server (configured in settings file),
     # send the session token, make a new view containing the contents of the remote
     # session, and then start listening for modifications to that view and synchronizing   
-    def run(self, edit):
+    def run(self):
         self.window.show_input_panel(
             'Session IP Address',
              '',
@@ -66,10 +53,16 @@ class ConnectToSessionCommand(sublime_plugin.WindowCommand):
              self.on_change,
              self.on_cancel)
 
+    def on_change(self, input):
+        pass
+
+    def on_cancel(self):
+        pass
+        
     def on_done(self, input):
         """Input panel handler - creates a new session connected to the given IP address. """
         
-        DiffListener.set_session(Session.Session(self.window.new_file(), input, edit))
+        DiffListener.session = Session.Session(self.window.new_file(), host=input)
 
 #class CloseSessionCommand(sublime_plugin.TextCommand):
 #    """Command to close a RemoteCollab session."""
