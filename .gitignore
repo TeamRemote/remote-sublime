@@ -54,4 +54,5 @@ docs/_build/
 
 # SublimeText workspace
 *.sublime-workspace
+terminal.glue
 
