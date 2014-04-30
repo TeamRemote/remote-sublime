@@ -27,7 +27,19 @@ You can also install Remote Collab manually:
 How to Use
 ----------
 
-Coming soon!
+#### Host a session
+
+1. Open the file you wish to collaboratively edit
+2. Open Command Palette using menu item `Tools -> Command Palette...` (<kbd>⇧</kbd><kbd>⌘</kbd><kbd>P</kbd> on Mac)
+3. Choose `Remote: Host Session`
+4. You are now hosting a Remote Collab session. Give your IP address to the remote colleage you wish to collaborate with and they can join your session.
+
+#### Join a session
+
+1. Open Command Palette using menu item `Tools -> Command Palette...` (<kbd>⇧</kbd><kbd>⌘</kbd><kbd>P</kbd> on Mac)
+2. Choose `Remote: Connect to Session`
+3. Enter the IP address of the host whose session you wish to connect to.
+4. You are now collaboratively editing a document with the host!
 
 Team Remote
 -----------
