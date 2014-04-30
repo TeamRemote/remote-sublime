@@ -1,5 +1,4 @@
 from . import diff_match_patch
-from . import Edit
 from collections import deque
 import socket
 import sublime
@@ -148,7 +147,9 @@ class Session(threading.Thread):
         current buffer to the local shadow.
         """
         diffs = self.dmp.diff_main(self.shadow, new_buffer)
+        debug ("Made diffs: {d}".format(d = diffs))
         patch = self.dmp.patch_make(self.shadow, diffs)
+        debug ("Made patch: {p}".format(p = diffs))
         self.transmitter.transmit(self.dmp.patch_toText(patch))
         self.shadow = new_buffer
 
