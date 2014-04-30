@@ -67,6 +67,13 @@ class ConnectToSessionCommand(sublime_plugin.WindowCommand):
         """
         DiffListener.session = Session.Session(self.window.new_file(), host=input)
 
+class UpdateBufferCommand(sublime_plugin.TextCommand):
+    """
+    Command to create an Edit object and update the buffer.
+    """
+    def run(self, edit, new_buffer):
+        self.view.replace(edit, sublime.Region(0, self.view.size()), new_buffer)
+
 #class CloseSessionCommand(sublime_plugin.TextCommand):
 #    """Command to close a RemoteCollab session."""
 #    def __init__(self, *args, **kwargs):

@@ -1,4 +1,5 @@
 from . import diff_match_patch
+from . import Edit
 from collections import deque
 import socket
 import sublime
@@ -157,14 +158,15 @@ class Session(threading.Thread):
         FIXME: thhis doesn't work correctly.
         """
         patch = self.dmp.patch_fromText(data)
-        self.shadow, shadow_results = self.dmp.patch_apply(patch, self.shadow)
-        current_buffer = self.get_buffer()
-        try:
-            edit = self.view.begin_edit()
-            self.view.replace(edit, sublime.Region(0, self.view.size()), current_buffer)
-            self.view.end_edit()
-        except Exception as e:
-           debug ("Error occured while editing buffer ", e)
+        shadow, shadow_results = self.dmp.patch_apply(patch, self.shadow)
+        if False in shadow_results:
+            debug ("Patch application failed, buffer may be out of sync")
+        else:
+            self.shadow = shadow
+            try:
+                self.view.run_command("update_buffer", {"new_buffer": self.shadow})
+            except Exception as e:
+               debug ("Error occured while editing buffer ", e)
 
     def close(self):
         """
