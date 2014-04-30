@@ -1,0 +1,6 @@
+Version 0.0.0
+-------------
+
++ Initial release version
++ currently supports a single session at a time
++ currently supports up to two users per session
