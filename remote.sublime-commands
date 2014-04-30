@@ -8,7 +8,7 @@
         "command": "start_session"
     },
     {
-        "caption": "Remote: Close Session",
-        "command": "close_session"
+        "caption": "Remote: Disconnect from Session",
+        "command": "disconnect_session"
     },
 ]

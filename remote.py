@@ -74,20 +74,9 @@ class UpdateBufferCommand(sublime_plugin.TextCommand):
     def run(self, edit, new_buffer):
         self.view.replace(edit, sublime.Region(0, self.view.size()), new_buffer)
 
-#class CloseSessionCommand(sublime_plugin.TextCommand):
-#    """Command to close a RemoteCollab session."""
-#    def __init__(self, *args, **kwargs):
-#        sublime_plugin.TextCommand.__init__(self, *args, **kwargs)#
+class DisconnectSessionCommand(sublime_plugin.ApplicationCommand):
+    """Command to close a RemoteCollab session."""
 
-#    # this will have to connect to the remote server (configured in settings file),
-#    # send the session token, make a new view containing the contents of the remote
-#    # session, and then start listening for modifications to that view and synchronizing
-#    def run(self,edit):
-#        session = next((session for session in df.sessions if session.view is self.view), None)
-#        if session is not None:
-#            session.end_session()
+    def run(self):
+        DiffListener.session.close()
 
-
-#class ReplaceViewCommand(sublime_plugin.TextCommand):
-#    def run(self, edit, data):
-#        self.view.replace(edit, sublime.Region(0, self.view.size()), data)
