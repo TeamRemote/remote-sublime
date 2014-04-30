@@ -174,8 +174,16 @@ class Session(threading.Thread):
         Closes a session, releasing both the socket and the initial socket
         if they are available.
         """
-        if self.socket is not None: self.socket.close()
-        if self.init_socket is not None: self.init_socket.close()
+        if self.socket is not None:
+            debug ("Closing and shutting down socket {s}".format(self.socket))
+            self.socket.shutdown()
+            self.socket.close()
+            debug ("Closed socket.")
+        if self.init_socket is not None:
+            debug ("Closing and shutting down handshake socket {s}".format(self.init_socket))
+            self.socket.shutdown()
+            self.init_socket.close()
+            debug ("Closed socket.")
 
     def get_buffer(self):
         return self.view.substr(sublime.Region(0, self.view.size()))
