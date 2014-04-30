@@ -9,17 +9,18 @@ import time
 
 ENCODING = "utf_8"
 
-def debug(message):
+def debug(message, exception = None):
     """
     Helper function for printing debug messages with timestamps and thread names.
     """
     t = time.localtime()
-    print("[{thread}-{id}: {timestamp}] ".format(
+    stamp = "[{thread}-{id} {timestamp}] ".format(
                                                 thread = threading.current_thread().name,
-                                                id = threading.current_thread().ident,
+                                                id = threading.get_ident(),
                                                 timestamp = time.strftime('%H:%M:%S')
-                                                ),
-        message)
+                                                )
+    print(stamp, message)
+    if exception: print (stamp, exception)
 
 
 class Transmitter(threading.Thread):
@@ -28,9 +29,9 @@ class Transmitter(threading.Thread):
     """
     def __init__(self, socket, parent):
         super(Transmitter, self).__init__()
-        self.name = "Transmitter({s}-{id})".format(
+        self.name = "({s}-{id}) Transmitter".format(
                                                     s = parent.name,
-                                                    id = parent.get_ident()
+                                                    id = parent.ident,
                                                     )
         self.socket = socket
         self.parent = parent
@@ -61,9 +62,9 @@ class Reciever (threading.Thread):
     """
     def __init__(self, socket, parent):
         super(Reciever, self).__init__()
-        self.name = "Reciever({s}-{id})".format(
+        self.name = "({s}-{id}) Reciever".format(
                                                 s = parent.name,
-                                                id = parent.get_ident()
+                                                id = parent.ident,
                                                 )
         self.socket = socket
         self.parent = parent
@@ -101,7 +102,7 @@ class Session(threading.Thread):
     def run(self):
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            if self.host is False:
+            if self.host is None: # if the remote host is None, we are the host.
                 sock.bind(('',self.port))
                 debug("bound socket, listening for remote")
                 sock.listen(1)
@@ -115,7 +116,7 @@ class Session(threading.Thread):
         else:
             if self.host is None: # If we are the host...
                 conn, address = sock.accept()               # accept a connection from the remote
-                debug ("Accepted connection from ", address)
+                debug ("Accepted connection from {a}".format (a = address))
                 self.reciever = Reciever(conn, self)        # start a reciever for the remote
                 self.transmitter = Transmitter(conn, self)  # start a transmitter for the remote
                 self.transmitter.start()
@@ -134,10 +135,11 @@ class Session(threading.Thread):
         """
         Sends the initial buffer contents to the remote. This is only called if we are the host.
         """
-        debug ("sent initial patch to remote at {addr}".format(addr = self.address))
         diffs = self.dmp.diff_main('', self.shadow)
         patch = self.dmp.patch_make('', diffs)
+        debug ("Made initial patch.")
         self.transmitter.transmit(self.dmp.patch_toText(patch))
+        debug ("Sent initial patch to remote.")
 
     def send_diffs(self, new_buffer):
         """
@@ -162,7 +164,7 @@ class Session(threading.Thread):
             self.view.replace(edit, sublime.Region(0, self.view.size()), current_buffer)
             self.view.end_edit()
         except Exception as e:
-           debug ("Error occured while editing buffer " + e)
+           debug ("Error occured while editing buffer ", e)
 
     def close(self):
         """
