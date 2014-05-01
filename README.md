@@ -32,7 +32,7 @@ How to Use
 1. Open the file you wish to collaboratively edit
 2. Open Command Palette using menu item `Tools -> Command Palette...` (<kbd>⇧</kbd><kbd>⌘</kbd><kbd>P</kbd> on Mac)
 3. Choose `Remote: Host Session`
-4. You are now hosting a Remote Collab session. Give your IP address to the remote colleage you wish to collaborate with and they can join your session.
+4. You are now hosting a Remote Collab session. Give your IP address to the remote colleague you wish to collaborate with and they can join your session.
 
 #### Join a session
 
